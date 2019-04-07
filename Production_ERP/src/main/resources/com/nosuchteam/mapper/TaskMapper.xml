@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nosuchteam.mapper.TaskMapper">
+  <resultMap id="BaseResultMap" type="Task">
+    <id column="task_id" jdbcType="VARCHAR" property="taskId" />
+    <result column="manufacture_sn" jdbcType="VARCHAR" property="manufactureSn" />
+    <result column="work_id" jdbcType="VARCHAR" property="workId" />
+    <result column="task_quantity" jdbcType="INTEGER" property="taskQuantity" />
+    <result column="working_hours" jdbcType="DECIMAL" property="workingHours" />
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    `task_id`, `manufacture_sn`, `work_id`, `task_quantity`, `working_hours`
+  </sql>
+  <sql id="association_Column_List">
+   t.`task_id`, t.`manufacture_sn`, t.`work_id`, t.`task_quantity`, t.`working_hours`
+   , w.`process_number`, w.`product_id`, w.`process_id`, w.`device_id`, w.`rating`
+   , m.`order_id`, m.`technology_id`, m.`launch_quantity`, m.`begin_date`, m.`end_date`
+  </sql>
+  <sql id="tableName">
+    `task`
+  </sql>
+  <sql id="associationTab">
+    `task` AS t
+    LEFT JOIN `work` AS w
+    ON  t.`work_id`= w.`work_id`
+    LEFT JOIN `manufacture` AS m
+    ON t.`manufacture_sn`=m.`manufacture_sn`
+  </sql>
+
+
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="association_Column_List" />
+    from <include refid="associationTab" />
+    where task_id = #{taskId,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from <include refid="tableName" />
+    where task_id = #{taskId,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="Task">
+    insert into <include refid="tableName" /> (<include refid="Base_Column_List" />)
+    values (#{taskId,jdbcType=VARCHAR}, #{manufactureSn,jdbcType=VARCHAR}, #{workId,jdbcType=VARCHAR},
+      #{taskQuantity,jdbcType=INTEGER}, #{workingHours,jdbcType=DECIMAL})
+  </insert>
+  <insert id="insertSelective" parameterType="Task">
+    insert into <include refid="tableName" />
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="taskId != null">
+        task_id,
+      </if>
+      <if test="manufactureSn != null">
+        manufacture_sn,
+      </if>
+      <if test="workId != null">
+        work_id,
+      </if>
+      <if test="taskQuantity != null">
+        task_quantity,
+      </if>
+      <if test="workingHours != null">
+        working_hours,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="taskId != null">
+        #{taskId,jdbcType=VARCHAR},
+      </if>
+      <if test="manufactureSn != null">
+        #{manufactureSn,jdbcType=VARCHAR},
+      </if>
+      <if test="workId != null">
+        #{workId,jdbcType=VARCHAR},
+      </if>
+      <if test="taskQuantity != null">
+        #{taskQuantity,jdbcType=INTEGER},
+      </if>
+      <if test="workingHours != null">
+        #{workingHours,jdbcType=DECIMAL},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="Task">
+    update <include refid="tableName" />
+    <set>
+      <if test="manufactureSn != null">
+        manufacture_sn = #{manufactureSn,jdbcType=VARCHAR},
+      </if>
+      <if test="workId != null">
+        work_id = #{workId,jdbcType=VARCHAR},
+      </if>
+      <if test="taskQuantity != null">
+        task_quantity = #{taskQuantity,jdbcType=INTEGER},
+      </if>
+      <if test="workingHours != null">
+        working_hours = #{workingHours,jdbcType=DECIMAL},
+      </if>
+    </set>
+    where task_id = #{taskId,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="Task">
+    update <include refid="tableName" />
+    set manufacture_sn = #{manufactureSn,jdbcType=VARCHAR},
+      work_id = #{workId,jdbcType=VARCHAR},
+      task_quantity = #{taskQuantity,jdbcType=INTEGER},
+      working_hours = #{workingHours,jdbcType=DECIMAL}
+    where task_id = #{taskId,jdbcType=VARCHAR}
+  </update>
+  <sql id="conditions">
+    <where>
+      <if test="taskId != '%null%' &amp; taskId != '%%' &amp; taskId != '' &amp; taskId != null">
+        t.task_id LIKE #{taskId}
+      </if>
+      <if test="workId != '%null%' &amp; workId != '%%' &amp; workId != '' &amp; workId != null">
+        AND t.work_id LIKE #{workId}
+      </if>
+      <if test="manufactureSn != '%null%' &amp; manufactureSn != '%%' &amp; manufactureSn != '' &amp; manufactureSn != null">
+        AND t.manufacture_sn LIKE #{manufactureSn}
+      </if>
+    </where>
+  </sql>
+  <select id="select" resultMap="BaseResultMap">
+    SELECT <include refid="association_Column_List" />
+    FROM <include refid="associationTab" />
+    <include refid="conditions" />
+    <if test="limit != null &amp; limit >= 1">
+      LIMIT #{limit}
+    </if>
+    <if test="offset != null &amp; offset >= 0">
+      OFFSET #{offset}
+    </if>
+  </select>
+  <select id="count" resultType="_int">
+    SELECT COUNT(*)
+    FROM <include refid="associationTab" />
+    <include refid="conditions" />
+  </select>
+</mapper>
